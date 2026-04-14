@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Pro Plan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+        <h2 class="text-2xl font-bold mb-6 text-center text-purple-700">Checkout</h2>
+        <p class="text-center text-gray-600 mb-6">Pro Plan Lifetime Access - $19.99</p>
+
+        <form id="payment-form" class="space-y-6">
+            <div id="payment-element" class="p-4 border rounded bg-gray-50">
+                <!-- Stripe Elements will be inserted here -->
+            </div>
+            <button id="submit" class="w-full bg-purple-600 text-white py-3 rounded-md hover:bg-purple-700 transition font-bold text-lg disabled:opacity-50">
+                <span id="button-text">Pay now</span>
+            </button>
+            <div id="payment-message" class="hidden text-center text-red-500 font-semibold mt-4"></div>
+        </form>
+
+        <div class="mt-6 text-center">
+            <a href="/pro.html" class="text-blue-500 hover:underline">Cancel and return</a>
+        </div>
+    </div>
+
+    <script>
+        let stripe;
+        let elements;
+
+        async function initStripe() {
+            const configRes = await fetch('/api/stripe/config');
+            if (!configRes.ok) {
+                document.getElementById('payment-message').textContent = 'Stripe configuration error.';
+                document.getElementById('payment-message').classList.remove('hidden');
+                document.getElementById('submit').disabled = true;
+                return;
+            }
+            const { publishableKey } = await configRes.json();
+            stripe = Stripe(publishableKey);
+
+            const intentRes = await fetch('/api/stripe/create-payment-intent', { method: 'POST' });
+            if (!intentRes.ok) {
+                document.getElementById('payment-message').textContent = 'Error creating payment intent.';
+                document.getElementById('payment-message').classList.remove('hidden');
+                document.getElementById('submit').disabled = true;
+                return;
+            }
+            const { clientSecret } = await intentRes.json();
+
+            elements = stripe.elements({ clientSecret });
+            const paymentElement = elements.create('payment');
+            paymentElement.mount('#payment-element');
+        }
+
+        document.getElementById('payment-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submit');
+            const messageDiv = document.getElementById('payment-message');
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Processing...';
+
+            const { error } = await stripe.confirmPayment({
+                elements,
+                confirmParams: {
+                    // Make sure to set this to your payment completion page
+                    return_url: window.location.origin + '/home.html',
+                },
+            });
+
+            if (error) {
+                messageDiv.textContent = error.message;
+                messageDiv.classList.remove('hidden');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Pay now';
+            } else {
+                // The confirmPayment method will automatically redirect the user
+            }
+        });
+
+        initStripe();
+    </script>
+</body>
+</html>
