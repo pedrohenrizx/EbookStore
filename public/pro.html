@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Plan - eBook Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <a href="/home.html" class="text-xl font-bold text-blue-600 hover:underline">eBookStore</a>
+                <div class="flex space-x-4">
+                    <a href="/home.html" class="text-gray-700 hover:text-blue-500">Catalog</a>
+                    <a href="/basic.html" class="text-gray-700 hover:text-blue-500">Basic Plan</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto px-4 py-12 text-center">
+        <h1 class="text-4xl font-bold mb-4 text-purple-700">Pro Plan</h1>
+        <p class="text-xl text-gray-600 mb-8">Unlock the ultimate reading experience.</p>
+
+        <div class="bg-white p-8 rounded-lg shadow-md mb-8 text-left border-t-4 border-purple-500">
+            <h2 class="text-2xl font-bold mb-4">Pro Benefits:</h2>
+            <ul class="list-disc list-inside text-gray-700 space-y-2 mb-6">
+                <li><strong>Unlimited Access:</strong> Read any eBook in our entire premium catalog.</li>
+                <li><strong>Early Access:</strong> Read new releases before anyone else.</li>
+                <li><strong>Exclusive Content:</strong> Interviews with authors and bonus chapters.</li>
+                <li><strong>Ad-Free Experience:</strong> No interruptions while you read.</li>
+            </ul>
+
+            <div class="text-center">
+                <p class="text-3xl font-bold text-gray-900 mb-6">$19.99 <span class="text-lg font-normal text-gray-500">/ lifetime</span></p>
+                <button id="upgrade-btn" class="bg-purple-600 text-white px-8 py-3 rounded-lg font-bold text-lg hover:bg-purple-700 transition w-full sm:w-auto">Upgrade Now</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('upgrade-btn').addEventListener('click', async () => {
+            const res = await fetch('/api/me');
+            if (res.ok) {
+                const user = await res.json();
+                if (user.plan === 'pro') {
+                    alert('You are already on the Pro plan!');
+                } else {
+                    window.location.href = '/checkout.html';
+                }
+            } else {
+                window.location.href = '/';
+            }
+        });
+    </script>
+</body>
+</html>
